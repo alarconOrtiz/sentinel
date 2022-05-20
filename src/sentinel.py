@@ -1,6 +1,7 @@
 import logging 
 from datetime import datetime
 import scapy.all as scapy
+
 from NetworkDevicesData import NetworkDevicesData
 from ConfigHandler import ConfigHandler
 
@@ -14,9 +15,9 @@ def convertDic2NetworkDevicesData(devicesKnown : dict) -> list():
     logging.debug(f'devices read from a file : {devicesList}')
     return devicesList
 
-def main():
+def main() -> None:
     logName = f'sentinel{datetime.now().strftime("_%y_%m_%d")}.log'
-    logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)#,filename=logName) 
+    logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
     logging.info(f'Init app log {logName}')
     #get file info
     config = ConfigHandler()
@@ -25,20 +26,18 @@ def main():
     
     devicesInConfig = convertDic2NetworkDevicesData(devicesknownDic)
     logging.info(f'device in config file: {len(devicesInConfig)}')
-
+    
     localIP = scapy.get_if_addr(scapy.conf.iface)
     logging.info(f'localIP = {localIP}')
-    
-    #get devices on network
-    devicesNetworkInfo = list()
-    ARPpkt = scapy.Ether(dst='ff:ff:ff:ff:ff')/scapy.ARP(op=1,pdst=f'{localIP}/24')
-    received = scapy.srp(ARPpkt,timeout=2,iface=scapy.conf.iface)
-    
-    for i in range(len(received[0])):
-        deviceOnNetwork = NetworkDevicesData(mac = received[0][i].answer.hwsrc, ip = received[0][i].answer.psrc, alias='UNKNOWN')
-        devicesNetworkInfo.append(deviceOnNetwork)
+
+    #looking for NetworkIP
+    networkIP = localIP[:localIP.rfind('.')+1]
+    logging.info(f'network IP :{networkIP}0')
+    devices = scapy.arping(f'{networkIP}0/24')
+
+    print(devices[0])
             
-    logging.info(f'device found on network: {len(devicesNetworkInfo)}')
+    logging.info(f'device(s) found on network: {len(devicesNetworkInfo)} device {deviceinNetwork}')
     #compare devices on config file with devices on the network
     devicesUnknown = list()
     for deviceNK in devicesNetworkInfo:
