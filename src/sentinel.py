@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import logging 
 from datetime import datetime
 import scapy.all as scapy
@@ -35,15 +36,10 @@ def main() -> None:
     logging.info(f'network IP :{networkIP}0')
     devices = scapy.arping(f'{networkIP}0/24')
 
-    print(devices[0])
-            
-    logging.info(f'device(s) found on network: {len(devicesNetworkInfo)} device {deviceinNetwork}')
-    #compare devices on config file with devices on the network
-    devicesUnknown = list()
-    for deviceNK in devicesNetworkInfo:
-        for deviceConfig in devicesInConfig:
-            if deviceNK.mac == deviceConfig.mac:
-                logging.info(f'device found : {deviceNK.mac}')
+    i:int = 0
+    while ( i <= len(devices[0])-1):
+        print(f"device found mac {devices[0][i].answer.hwsrc} IP {devices[0][i].answer.psrc}")
+        i = 1 + i
 
 if __name__ == "__main__":
     main()
